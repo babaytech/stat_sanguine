@@ -3,6 +3,7 @@
 import configparser
 from aiogram import Bot, Dispatcher, executor, types
 import datetime
+import os
 import colorama
 import matplotlib.pyplot as plt
 import sqlite3
@@ -32,8 +33,8 @@ async def town_stat():
     for i in all_data:
         town_check = i[1].find("town-")
         if town_check == 0:
-            print(colorama.Fore.GREEN + f" город: {i[1].partition('-')[2]}",
-                  colorama.Fore.RED + f" банк: {i[2]}")
+            print(colorama.Fore.BLUE + f"город: {i[1].partition('-')[2]}")
+            print(colorama.Fore.GREEN + f"  банк: {i[2]}")
             towns_names.append(i[1].partition('-')[2])
             towns_balance.append(i[2])
             j += 1
@@ -57,8 +58,8 @@ async def nations_stat():
     for i in all_data:
         town_check = i[1].find("nation-")
         if town_check == 0:
-            print(colorama.Fore.GREEN +  f" нация: {i[1].partition('-')[2]}",
-                  colorama.Fore.RED + f" банк: {i[2]}")
+            print(colorama.Fore.BLUE + f"нация: {i[1].partition('-')[2]}")
+            print(colorama.Fore.GREEN + f"  банк: {i[2]}")
             nations_names.append(i[1].partition('-')[2])
             nations_balance.append(i[2])
             j += 1
@@ -89,8 +90,8 @@ async def player_stat():
             pass
 
         else:
-            print(colorama.Fore.GREEN +  f" игрок: {i[1]}",
-                  colorama.Fore.RED + f" баланс: {i[2]}")
+            print(colorama.Fore.BLUE + f"игрок: {i[1]}")
+            print(colorama.Fore.GREEN + f"  баланс: {i[2]}")
             players_names.append(i[1])
             players_balance.append(i[2])
             j += 1
@@ -99,18 +100,22 @@ async def player_stat():
     plt.savefig("png/players.png")
     print(colorama.Fore.RESET)
 
-@dp.message_handler(commands="check_stat")
+@dp.message_handler(commands="start")
 async def send_stat(message: types.Message):
-    await player_stat()
-    await nations_stat()
-    await town_stat()
     await bot.send_photo(chat_id=message.chat.id, photo=types.InputFile('png/players.png'))
     await bot.send_photo(chat_id=message.chat.id, photo=types.InputFile('png/nations.png'))
     await bot.send_photo(chat_id=message.chat.id, photo=types.InputFile('png/towns.png'))
 
-
-
-
+async def chk_date():
+    await player_stat()
+    await nations_stat()
+    await town_stat()
 
 if __name__ == "__main__":
-    executor.start_polling(dp, skip_updates=True)
+    chkdir = os.path.isdir("png")
+    if chkdir == True:
+        executor.start_polling(dp, skip_updates=True)
+    else:
+        os.mkdir("png")
+        print("создание директории 'png'")
+        executor.start_polling(dp, skip_updates=True)
