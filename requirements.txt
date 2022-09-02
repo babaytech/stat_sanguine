@@ -3,3 +3,4 @@ art
 colorama
 loguru
 matplotlib
+asyncio
