@@ -9,7 +9,7 @@ import colorama
 import matplotlib.pyplot as plt
 import sqlite3
 from loguru import logger
-from art import *
+from art import text2art
 ###################################################################################
 config = configparser.ConfigParser()
 config.read("config.ini")
@@ -114,7 +114,7 @@ async def start(message: types.Message):
     try:
         logger.info(f"{username} подключился к боту")
         keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
-        buttons = ["Получить Статистику"]
+        buttons = ["Получить Статистику", "Онлайн Сейчас"]
         keyboard.add(*buttons)
         await message.answer(f"Добро Пожаловать, {username}.", reply_markup=keyboard)
         while True:
@@ -135,9 +135,6 @@ async def start(message: types.Message):
 async def send_stat(message: types.Message):
     username = message.from_user.username if message.from_user.username else None
     logger.info(f"{username} запросил статистику")
-    # os.remove("png/players.png")
-    # os.remove("png/towns.png")
-    # os.remove("png/nations.png")
     await chk_date()
     await message.answer("Статистика Игроков")
     await bot.send_photo(chat_id=message.chat.id, photo=types.InputFile('png/players.png'))
@@ -145,14 +142,27 @@ async def send_stat(message: types.Message):
     await bot.send_photo(chat_id=message.chat.id, photo=types.InputFile('png/towns.png'))
     await message.answer("Статистика Наций")
     await bot.send_photo(chat_id=message.chat.id, photo=types.InputFile('png/nations.png'))
+    os.remove("png/players.png")
+    os.remove("png/towns.png")
+    os.remove("png/nations.png")
+
+@dp.message_handler(lambda message: message.text == "Онлайн Сейчас")
+async def send_online(message: types.Message):
+    mcr = MCRcon("127.0.0.1", config["mcrcon"]["password"])
+    mcr.connect()
+    resp = mcr.command("/list")
+    print(resp)
+    mcr.disconnect()
 
 
 if __name__ == "__main__":
     chkdir = os.path.isdir("png")
     colorama.init()
     if chkdir == True:
+        text2art("stat_bot")
         executor.start_polling(dp, skip_updates=True)
     else:
+        text2art("stat_bot")
         os.mkdir("png")
         print("создание директории 'png'")
         executor.start_polling(dp, skip_updates=True)

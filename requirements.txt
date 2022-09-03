@@ -4,3 +4,4 @@ colorama
 loguru
 matplotlib
 asyncio
+mcrcon
